@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meowie Online - چت عمومی و بازی شکار گربه</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Vazirmatn Font -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        meowieDark: '#080c14',
+                        meowieCard: '#111827',
+                        meowieAccent: '#f43f5e',
+                        meowieGold: '#fbbf24',
+                        meowiePurple: '#a855f7'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #05070d;
+            color: #f1f5f9;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080c14; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f43f5e; }
+        .neon-glow-pink { box-shadow: 0 0 25px rgba(244, 63, 94, 0.25); }
+        .neon-glow-gold { box-shadow: 0 0 25px rgba(251, 191, 36, 0.25); }
+        .neon-glow-purple { box-shadow: 0 0 25px rgba(168, 85, 247, 0.25); }
+        
+        /* Toast Notification System */
+        #toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 24rem;
+            width: calc(100% - 3rem);
+            pointer-events: none;
+        }
+        .toast-msg {
+            pointer-events: auto;
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes toastIn {
+            from { transform: translateY(100%) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden select-none bg-slate-950 text-slate-100">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- AUTHENTICATION OVERLAY (STRICT GUARD) -->
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-rose-500/30 rounded-3xl p-6 sm:p-8 w-full max-w-md neon-glow-pink relative">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-3 shadow-lg shadow-rose-500/30">
+                    🐱
+                </div>
+                <h2 class="text-2xl font-bold text-white">ورود به دنیای Meowie Online</h2>
+                <p class="text-xs text-slate-400 mt-1">حساب کاربری امن خود را وارد کرده یا ثبت‌نام کنید.</p>
+            </div>
+
+            <!-- Auth Forms Tab -->
+            <div class="flex border-b border-slate-800 mb-5">
+                <button id="auth-tab-login-btn" type="button" onclick="toggleAuthTab('login')" class="flex-1 py-2 font-bold text-sm border-b-2 border-rose-500 text-rose-400">ورود به حساب</button>
+                <button id="auth-tab-register-btn" type="button" onclick="toggleAuthTab('register')" class="flex-1 py-2 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200">ثبت‌نام جدید</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">نام کاربری</label>
+                    <input type="text" id="login-username" placeholder="مثلاً: CatMaster" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">رمز عبور</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                </div>
+                <div id="auth-error-msg" class="text-xs text-rose-400 hidden">نام کاربری یا رمز عبور اشتباه است!</div>
+                <button type="submit" class="w-full bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-rose-600/30">
+                    ورود به سیستم Meowie 🚀
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">نام کاربری دلخواه</label>
+                    <input type="text" id="reg-username" placeholder="مثلاً: MeowHero" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">رمز عبور</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">تکرار رمز عبور</label>
+                    <input type="password" id="reg-confirm-password" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500">
+                </div>
+                <div id="reg-error-msg" class="text-xs text-rose-400 hidden"></div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-purple-600/30">
+                    ایجاد حساب کاربری ✨
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN GAME HEADER -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800/80 px-4 py-3 flex items-center justify-between z-20">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-purple-600 flex items-center justify-center text-white text-xl shadow-lg shadow-rose-500/20">
+                    🐱
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+            </div>
+            <div>
+                <h1 class="font-bold text-base text-slate-100 flex items-center gap-2">
+                    Meowie Online
+                    <span class="text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full">شبکه سرور فعال</span>
+                </h1>
+                <p class="text-[11px] text-slate-400">چت عمومی، سیستم بازی و ولت داخلی</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- User Stats Bar & Actions -->
+            <div id="user-stats-bar" class="hidden md:flex items-center gap-3 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl text-xs">
+                <div class="flex items-center gap-1.5 text-amber-400" title="Meowie Points (سکه)">
+                    <i class="fa-solid fa-coins"></i>
+                    <span id="header-user-coins" class="font-bold">0</span>
+                    <span class="text-[10px] text-amber-500/80">MP</span>
+                </div>
+                <div class="w-px h-4 bg-slate-800"></div>
+                <div class="flex items-center gap-1.5 text-emerald-400" title="Meowie Internal Token">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span id="header-user-meowtoken" class="font-bold">0.00</span>
+                    <span class="text-[10px] text-emerald-400/80">$MEOW</span>
+                </div>
+                <div class="w-px h-4 bg-slate-800"></div>
+                <div class="flex items-center gap-1.5 text-purple-400">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>لول <strong id="header-user-level">0</strong></span>
+                </div>
+                <div class="w-px h-4 bg-slate-800"></div>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                    <i class="fa-solid fa-user text-rose-400"></i>
+                    <span id="header-username" class="font-semibold text-rose-300">...</span>
+                </div>
+            </div>
+
+            <!-- Gift Code Trigger -->
+            <button type="button" onclick="openGiftModal()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-gift"></i>
+                <span class="hidden sm:inline">کد هدیه</span>
+            </button>
+
+            <!-- Internal Wallet Trigger -->
+            <button type="button" onclick="openWalletModal()" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet"></i>
+                <span class="hidden sm:inline">ولت داخلی</span>
+            </button>
+
+            <!-- Pay Trigger -->
+            <button type="button" onclick="openPayModal()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span class="hidden sm:inline">انتقال دارایی</span>
+            </button>
+
+            <!-- Upgrade Trigger -->
+            <button type="button" onclick="openUpgradeModal()" class="bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-up-long"></i>
+                <span class="hidden sm:inline">ارتقا با سکه</span>
+            </button>
+
+            <!-- Admin Button -->
+            <button type="button" onclick="openAdminModal()" class="bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 px-3 py-2 rounded-xl transition text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-user-shield text-purple-400"></i>
+                <span class="hidden sm:inline">پنل ادمین</span>
+            </button>
+
+            <!-- Logout -->
+            <button type="button" onclick="logoutUser()" class="bg-slate-800 hover:bg-rose-950/60 text-slate-300 hover:text-rose-300 border border-slate-700 px-2.5 py-2 rounded-xl transition text-xs">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- WORKSPACE: CHAT & GAME -->
+    <main class="flex-1 flex flex-col relative overflow-hidden">
+        
+        <!-- Command Shortcuts Toolbar -->
+        <div class="bg-slate-900/60 border-b border-slate-800/80 p-2 overflow-x-auto flex items-center gap-2 text-xs">
+            <span class="text-slate-400 px-2 whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles text-rose-400 ml-1"></i>دستورات سریع:</span>
+            
+            <button type="button" onclick="executeCommand('میو')" class="bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-white px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 font-bold shadow-sm">
+                🐱 میو! (سطح ۰+)
+            </button>
+            <button type="button" onclick="executeCommand('شکار')" class="bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white px-3.5 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 font-bold shadow-sm">
+                🐾 شکار (سطح ۳+)
+            </button>
+            <button type="button" onclick="openUpgradeModal()" class="bg-purple-950/50 hover:bg-purple-900/60 text-purple-300 border border-purple-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                ⚡ ارتقا با سکه (سطح ۳+)
+            </button>
+            <button type="button" onclick="openSmugglingModal()" class="bg-red-950/50 hover:bg-red-900/60 text-red-300 border border-red-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                🕵️ بازار قاچاق (سطح ۱۰+)
+            </button>
+            <button type="button" onclick="openGiftModal()" class="bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 border border-amber-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                🎁 ورود کد هدیه
+            </button>
+            <button type="button" onclick="executeCommand('دیلی')" class="bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                🎁 پاداش روزانه
+            </button>
+            <button type="button" onclick="openWalletModal()" class="bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                💎 کیف پول (سطح ۱۰+)
+            </button>
+            <button type="button" onclick="openPayModal()" class="bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 border border-amber-800/50 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                💸 انتقال سکه & کریپتو
+            </button>
+            <button type="button" onclick="executeCommand('پروفایل')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl whitespace-nowrap transition">
+                👤 پروفایل
+            </button>
+        </div>
+
+        <!-- Global Chat Section -->
+        <section class="flex-1 flex flex-col h-full bg-slate-950 relative overflow-hidden">
+            <!-- Chat Container with Scroll -->
+            <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- Messages will be rendered here dynamically -->
+            </div>
+
+            <!-- Chat Input Area -->
+            <form id="chat-form" class="bg-slate-900/90 border-t border-slate-800 p-3 flex items-center gap-2">
+                <input type="text" id="chat-input" placeholder="پیام خود را بنویسید یا دستوراتی مانند 'میو' یا 'شکار' را وارد کنید..." autocomplete="off" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500 transition">
+                <button type="submit" class="bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold px-5 py-3 rounded-xl transition text-sm flex items-center gap-2 shadow-lg shadow-rose-600/20">
+                    <span>ارسال</span>
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <!-- USER GIFT CODE REDEEM MODAL -->
+    <div id="user-gift-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-md neon-glow-gold">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-gift text-amber-400"></i>
+                    ورود کد هدیه (Gift Code)
+                </h3>
+                <button type="button" onclick="closeGiftModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="user-gift-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">کد هدیه خود را وارد کنید:</label>
+                    <input type="text" id="user-gift-code-input" placeholder="مثلاً: MEOW500" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white uppercase focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-xs transition">دریافت جایزه 🎁</button>
+                    <button type="button" onclick="closeGiftModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs transition">انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SMUGGLING MARKET MODAL -->
+    <div id="smuggling-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-red-500/40 rounded-2xl p-6 w-full max-w-md neon-glow-pink">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-red-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-ninja"></i>
+                    بازار قاچاق میووی (Smuggling Market)
+                </h3>
+                <button type="button" onclick="closeSmugglingModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="smuggling-locked-view" class="hidden text-center py-6 space-y-3">
+                <div class="w-14 h-14 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-2xl mx-auto">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h4 class="font-bold text-white text-sm">بازار قاچاق قفل است!</h4>
+                <p class="text-xs text-slate-400 leading-relaxed px-4">برای ورود به بازار سیاه قاچاق باید به <strong class="text-amber-400">سطح ۱۰ (Level 10)</strong> برسید.</p>
+            </div>
+
+            <div id="smuggling-unlocked-view" class="space-y-3">
+                <p class="text-xs text-slate-400">با توکن ولت <strong class="text-emerald-400">$MEOW</strong> کالای قاچاق بخرید و با سود بفروشید!</p>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-xs text-rose-300">💎 الماس قاچاق سیاه</div>
+                        <div class="text-[10px] text-slate-400">قیمت: 2.50 $MEOW | پاداش فروش: 3000 MP</div>
+                    </div>
+                    <button type="button" onclick="buySmuggledItem('black_diamond', 2.5, 3000)" class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">خرید</button>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-xs text-amber-300">📦 محموله ماهی‌های کمیاب نایاب</div>
+                        <div class="text-[10px] text-slate-400">قیمت: 5.00 $MEOW | پاداش فروش: 7000 MP</div>
+                    </div>
+                    <button type="button" onclick="buySmuggledItem('rare_fish_crate', 5.0, 7000)" class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg">خرید</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEND COIN & CRYPTO / PAY MODAL -->
+    <div id="pay-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 w-full max-w-md neon-glow-gold">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-coins"></i>
+                    انتقال سکه MP & کریپتو $MEOW
+                </h3>
+                <button type="button" onclick="closePayModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="pay-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">نوع دارایی برای انتقال</label>
+                    <select id="pay-currency-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                        <option value="mp">سکه MP</option>
+                        <option value="crypto">توکن ولت $MEOW</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">نام کاربری دریافت‌کننده</label>
+                    <input type="text" id="pay-target-user" placeholder="مثلاً User1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">مقدار دارایی</label>
+                    <input type="number" step="0.01" id="pay-amount-input" min="0.01" placeholder="مقدار" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-xs transition">انتقال دارایی</button>
+                    <button type="button" onclick="closePayModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs transition">انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CRYPTO WALLET MODAL -->
+    <div id="wallet-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 w-full max-w-md neon-glow-gold">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-emerald-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    کیف پول داخلی Meowie Internal Vault
+                </h3>
+                <button type="button" onclick="closeWalletModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Level Restriction Guard -->
+            <div id="wallet-locked-view" class="hidden text-center py-6 space-y-3">
+                <div class="w-14 h-14 bg-rose-500/10 border border-rose-500/30 rounded-full flex items-center justify-center text-rose-400 text-2xl mx-auto">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h4 class="font-bold text-white text-sm">کیف پول قفل است!</h4>
+                <p class="text-xs text-slate-400 leading-relaxed px-4">
+                    برای بازگشایی ولت داخلی و تبدیل توکن‌های <strong class="text-emerald-400">$MEOW</strong> باید حداقل به <strong class="text-amber-400">سطح ۱۰ (Level 10)</strong> برسید.
+                </p>
+                <div class="pt-2">
+                    <button type="button" onclick="closeWalletModal(); openUpgradeModal();" class="bg-gradient-to-r from-purple-600 to-rose-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg">
+                        ارتقای سطح با سکه ⚡
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Wallet Content -->
+            <div id="wallet-unlocked-view" class="space-y-4">
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-1.5">
+                    <div class="text-slate-400">آدرس شناسه ولت داخلی:</div>
+                    <div id="wallet-address-display" class="font-mono text-emerald-300 font-bold break-all select-all">0x...</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+                        <div class="text-[11px] text-slate-400">موجودی سکه MP</div>
+                        <div id="wallet-mp-balance" class="text-base font-bold text-amber-400 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+                        <div class="text-[11px] text-slate-400">توکن داخلی $MEOW</div>
+                        <div id="wallet-token-balance" class="text-base font-bold text-emerald-400 mt-1">0.00</div>
+                    </div>
+                </div>
+
+                <form id="swap-form" class="space-y-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <div class="text-xs font-bold text-slate-300">صرافی داخلی</div>
+                    <div class="text-[10px] text-slate-400 mb-2">نرخ تبدیل: هر 1000 سکه MP ⇄ 1.00 توکن $MEOW</div>
+                    
+                    <div>
+                        <label class="block text-[11px] text-slate-300 mb-1">نوع تبدیل</label>
+                        <select id="swap-direction-select" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="mp_to_token">تبدیل سکه (MP) به توکن ($MEOW)</option>
+                            <option value="token_to_mp">تبدیل توکن ($MEOW) به سکه (MP)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] text-slate-300 mb-1">مقدار ورودی</label>
+                        <input type="number" id="swap-amount-input" step="0.01" min="0.01" placeholder="مقدار را وارد کنید..." required class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs transition">انجام تبدیل اتمیک ⚡</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPGRADE MODAL -->
+    <div id="upgrade-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-purple-500/40 rounded-2xl p-6 w-full max-w-md neon-glow-purple">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-purple-300 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-up-long text-purple-400"></i>
+                    ایستگاه ارتقا با سکه Meowie
+                </h3>
+                <button type="button" onclick="closeUpgradeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Level Upgrade -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-xs text-slate-100 flex items-center gap-1">
+                            🚀 ارتقای مستقیم لول
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">افزایش 1 سطح بدون نیاز به XP</div>
+                        <div class="text-[11px] text-amber-400 font-bold mt-1">هزینه: <span id="upgrade-lvl-cost">250</span> MP</div>
+                    </div>
+                    <button type="button" onclick="buyLevelUpgrade()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition">
+                        ارتقا
+                    </button>
+                </div>
+
+                <!-- Luck Upgrade -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-xs text-slate-100 flex items-center gap-1">
+                            🍀 افزایش شانس شکار
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">شانس صید گربه‌های افسانه‌ای و کاهش فرار</div>
+                        <div class="text-[11px] text-amber-400 font-bold mt-1">هزینه: <span id="upgrade-luck-cost">150</span> MP</div>
+                    </div>
+                    <button type="button" onclick="buyLuckUpgrade()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition">
+                        ارتقا
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL -->
+    <div id="admin-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-purple-500/40 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col neon-glow-purple overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-800">
+                <h3 class="font-bold text-purple-300 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-purple-400"></i>
+                    پنل مدیریت ارشد Meowie Server
+                </h3>
+                <button type="button" onclick="closeAdminModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Login View for Admin -->
+            <div id="admin-login-card" class="p-8 text-center space-y-4 max-w-sm mx-auto my-auto w-full">
+                <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/30 rounded-2xl flex items-center justify-center text-purple-400 text-2xl mx-auto">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h4 class="font-bold text-white text-base">ورود امن ادمین</h4>
+                <form id="admin-login-form" class="space-y-3 text-right">
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">نام کاربری ادمین</label>
+                        <input type="text" id="admin-user-input" value="admin" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1">رمز عبور ادمین</label>
+                        <input type="password" id="admin-pass-input" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div id="admin-login-error" class="text-xs text-rose-400 hidden">احراز هویت ادمین ناموفق بود!</div>
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs transition">ورود به مدیریت</button>
+                </form>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="admin-dashboard" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-slate-800 px-4 bg-slate-950/50 overflow-x-auto">
+                    <button id="tab-btn-users" type="button" onclick="switchAdminTab('users')" class="admin-tab px-4 py-3 border-b-2 border-rose-500 text-rose-400 font-medium text-xs whitespace-nowrap">مدیریت بازیکنان</button>
+                    <button id="tab-btn-luckmod" type="button" onclick="switchAdminTab('luckmod')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">🎯 تنظیم شانس & سطح</button>
+                    <button id="tab-btn-transfers" type="button" onclick="switchAdminTab('transfers')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">💸 انتقال سکه & کریپتو</button>
+                    <button id="tab-btn-crypto" type="button" onclick="switchAdminTab('crypto')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">مدیریت کریپتو & ولت</button>
+                    <button id="tab-btn-giftcodes" type="button" onclick="switchAdminTab('giftcodes')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">کدهای هدیه (Gift Code)</button>
+                    <button id="tab-btn-rates" type="button" onclick="switchAdminTab('rates')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">تنظیم شانس & فرار کلی</button>
+                    <button id="tab-btn-broadcast" type="button" onclick="switchAdminTab('broadcast')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">اطلاعیه عمومی</button>
+                    <button id="tab-btn-settings" type="button" onclick="switchAdminTab('settings')" class="admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap">تنظیمات کلی & رمز</button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="flex-1 overflow-y-auto p-4">
+                    <!-- Tab: Users -->
+                    <div id="tab-content-users" class="admin-tab-content space-y-3">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 bg-slate-950/80">
+                                        <th class="p-3">کاربر</th>
+                                        <th class="p-3">سکه (MP)</th>
+                                        <th class="p-3">توکن $MEOW</th>
+                                        <th class="p-3">سطح (Level)</th>
+                                        <th class="p-3">بوست شانس اختصاصی</th>
+                                        <th class="p-3">وضعیت</th>
+                                        <th class="p-3">عملیات ادمین</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table-body">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Luck & Level Modification -->
+                    <div id="tab-content-luckmod" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-crosshairs"></i>
+                                تنظیم شانس صید و سطح بازیکنان
+                            </h4>
+                            <p class="text-[11px] text-slate-400">تغییر سطح (Level) یا شانس صید اختصاصی کاربر مشخص.</p>
+                            
+                            <form id="admin-luck-level-form" class="space-y-3 pt-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] text-slate-300 mb-1">انتخاب بازیکن</label>
+                                        <select id="admin-luck-user-select" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                                            <!-- Dynamic -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-300 mb-1">سطح جدید (Level)</label>
+                                        <input type="number" id="admin-luck-level-input" min="0" placeholder="مثلاً 5" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-300 mb-1">بوست شانس اختصاصی (%)</label>
+                                        <input type="number" id="admin-luck-mod-input" placeholder="مثلاً 15 یا -10" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                                    </div>
+                                </div>
+                                <button type="button" onclick="adminSubmitLuckLevelForm()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition">
+                                    ذخیره تغییرات شانس و سطح ⚡
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Transfers & Currency Admin -->
+                    <div id="tab-content-transfers" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-money-bill-transfer"></i>
+                                مدیریت واریز و انتقال سکه MP & کریپتو $MEOW
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                                    <h5 class="font-bold text-xs text-amber-300">🟡 واریز/کسر سکه MP</h5>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-400 mb-1">بازیکن دریافت‌کننده</label>
+                                        <select id="admin-transfer-mp-user" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                            <!-- Dynamic -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-400 mb-1">مقدار سکه MP</label>
+                                        <input type="number" id="admin-transfer-mp-amount" placeholder="مثلاً 500" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                    </div>
+                                    <button type="button" onclick="adminExecuteMPTransfer()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg text-xs transition">
+                                        اعمال تغییرات سکه MP
+                                    </button>
+                                </div>
+
+                                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                                    <h5 class="font-bold text-xs text-emerald-300">💎 واریز/کسر توکن کریپتو $MEOW</h5>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-400 mb-1">بازیکن دریافت‌کننده</label>
+                                        <select id="admin-transfer-crypto-user" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                            <!-- Dynamic -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-400 mb-1">مقدار توکن $MEOW</label>
+                                        <input type="number" step="0.01" id="admin-transfer-crypto-amount" placeholder="مثلاً 10.50" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                    </div>
+                                    <button type="button" onclick="adminExecuteCryptoTransfer()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs transition">
+                                        واریز توکن $MEOW
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Crypto & Wallet Admin -->
+                    <div id="tab-content-crypto" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-emerald-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wallet"></i>
+                                مدیریت توکن‌ها و ولت کریپتویی کاربران
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                                    <label class="block text-[11px] text-slate-300">تغییر نرخ تبدیل (MP به $MEOW)</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" id="admin-swap-rate-input" placeholder="مثلاً 1000" class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white">
+                                        <button type="button" onclick="adminSaveSwapRate()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2 rounded-lg text-xs transition">ثبت نرخ</button>
+                                    </div>
+                                    <div class="text-[10px] text-slate-400">نرخ فعلی: هر <span id="admin-current-swap-rate" class="text-amber-400 font-bold">1000</span> MP = 1 $MEOW</div>
+                                </div>
+
+                                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2">
+                                    <label class="block text-[11px] text-slate-300">واریز مستقیم توکن</label>
+                                    <button type="button" onclick="adminGrantTokensPrompt()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold py-2 rounded-lg text-xs transition">شارژ توکن $MEOW به کاربر</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-slate-200">آدرس ولت داخلی کاربران</h4>
+                            <div id="admin-crypto-wallets-list" class="space-y-2 text-xs">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Gift Codes -->
+                    <div id="tab-content-giftcodes" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-gift"></i>
+                                ساخت کد هدیه جدید (Gift Code)
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <input type="text" id="gift-code-name" placeholder="کد هدیه (مثلاً MEOW500)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white uppercase">
+                                <input type="number" id="gift-code-reward" placeholder="مقدار سکه جایزه (MP)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                                <input type="number" id="gift-code-uses" placeholder="تعداد دفعات مجاز استفاده" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <button type="button" onclick="adminCreateGiftCode()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">ایجاد کد هدیه ✨</button>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-slate-200">لیست کدهای هدیه فعال</h4>
+                            <div id="admin-gift-codes-list" class="space-y-2 text-xs">
+                                <!-- Dynamic -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Rates -->
+                    <div id="tab-content-rates" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-slate-200">درصد احتمال فرار و کمیابی صید</h4>
+                            <div class="space-y-2 text-xs">
+                                <div>
+                                    <div class="flex justify-between text-slate-400 mb-1">
+                                        <span>درصد ناکامی / فرار گربه:</span>
+                                        <span id="rate-val-fail" class="text-rose-400 font-bold">35</span>%
+                                    </div>
+                                    <input type="range" id="rate-fail" min="0" max="80" value="35" oninput="updateRateLabel()" class="w-full accent-rose-500">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-slate-400 mb-1">
+                                        <span>گربه معمولی:</span>
+                                        <span id="rate-val-common" class="text-slate-300 font-bold">70</span>%
+                                    </div>
+                                    <input type="range" id="rate-common" min="10" max="90" value="70" oninput="updateRateLabel()" class="w-full accent-slate-400">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-slate-400 mb-1">
+                                        <span>گربه نینجا (Rare):</span>
+                                        <span id="rate-val-rare" class="text-purple-400 font-bold">20</span>%
+                                    </div>
+                                    <input type="range" id="rate-rare" min="5" max="50" value="20" oninput="updateRateLabel()" class="w-full accent-purple-500">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-slate-400 mb-1">
+                                        <span>گربه شاهزاده (Epic):</span>
+                                        <span id="rate-val-epic" class="text-amber-400 font-bold">8</span>%
+                                    </div>
+                                    <input type="range" id="rate-epic" min="1" max="30" value="8" oninput="updateRateLabel()" class="w-full accent-amber-500">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-slate-400 mb-1">
+                                        <span>گربه افسانه‌ای (Legendary):</span>
+                                        <span id="rate-val-legendary" class="text-cyan-400 font-bold">2</span>%
+                                    </div>
+                                    <input type="range" id="rate-legendary" min="1" max="15" value="2" oninput="updateRateLabel()" class="w-full accent-cyan-500">
+                                </div>
+                            </div>
+                            <button type="button" onclick="saveRates()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">ذخیره تغییرات شانس</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Broadcast -->
+                    <div id="tab-content-broadcast" class="admin-tab-content space-y-3 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-slate-200">ارسال اطلاعیه فوری به چت عمومی</h4>
+                            <textarea id="admin-broadcast-msg" rows="3" placeholder="متن پیام عمومی ادمین را اینجا بنویسید..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-purple-500"></textarea>
+                            <button type="button" onclick="sendBroadcast()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition">ارسال اطلاعیه 📢</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Settings -->
+                    <div id="tab-content-settings" class="admin-tab-content space-y-4 hidden">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-purple-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-key"></i>
+                                تغییر رمز عبور ادمین
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-slate-300 mb-1">رمز عبور جدید</label>
+                                    <input type="password" id="admin-new-pass" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" onclick="adminChangePassword()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs transition">تغییر رمز عبور</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h4 class="font-bold text-xs text-slate-200">عملیات پایگاه داده</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="clearGlobalChat()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">پاکسازی پیام‌های چت</button>
+                                <button type="button" onclick="adminResetAllData()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition">ریست دیتابیس (Reset DB)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT SECTION WITH FULL VALIDATION & REAL-TIME EMULATION ENGINE -->
+    <script>
+        // Security Helper: Sanitizes text against XSS attacks
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Custom Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let bgClasses = 'bg-slate-900 border-slate-700 text-slate-200';
+            if (type === 'success') bgClasses = 'bg-emerald-950 border-emerald-500/50 text-emerald-200';
+            if (type === 'error') bgClasses = 'bg-rose-950 border-rose-500/50 text-rose-200';
+            if (type === 'warning') bgClasses = 'bg-amber-950 border-amber-500/50 text-amber-200';
+
+            toast.className = `toast-msg border rounded-xl p-3 text-xs shadow-xl flex items-center gap-2 ${bgClasses}`;
+            toast.innerHTML = `<span>${escapeHTML(message)}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Central Server Data Engine Emulation
+        let currentUser = localStorage.getItem('meowie_current_user') || null;
+        let lastMeowTime = 0;
+        let isAdminAuthenticated = false;
+
+        let appData = JSON.parse(localStorage.getItem('meowie_global_app_data')) || {
+            users: {},
+            chatMessages: [
+                { sender: 'MeowieBot', text: '🐱 به دنیای Meowie Online خوش آمدید! چت و الگوریتم‌های سرور کاملاً یکپارچه شدند.', time: '12:00', isSystem: true }
+            ],
+            rates: { fail: 35, common: 70, rare: 20, epic: 8, legendary: 2 },
+            swapRate: 1000,
+            giftCodes: {}
+        };
+
+        // Ensure Admin Account always exists cleanly
+        function ensureAdminAccount() {
+            if (!appData.users) appData.users = {};
+            if (!appData.users['admin']) {
+                appData.users['admin'] = {
+                    passwordHash: 'Diba#4488',
+                    coins: 5000,
+                    xp: 2500,
+                    level: 10,
+                    meowCount: 50,
+                    catchesCount: 50,
+                    inventory: [],
+                    meowTokens: 50.0,
+                    walletAddr: '0xMEOW_ADMIN_MASTER_VAULT_KEY',
+                    luckBoost: 0,
+                    customLuckModifier: 0,
+                    isBanned: false,
+                    role: 'admin'
+                };
+            }
+        }
+        ensureAdminAccount();
+
+        const CATS_DATABASE = [
+            { name: 'گربه خیابانی معمولی 🐈', mp: 20, xp: 10, tier: 'common' },
+            { name: 'گربه سیاه‌پوش نینجا 🥷🐱', mp: 50, xp: 25, tier: 'rare' },
+            { name: 'گربه شاهزاده طلایی 👑🐱', mp: 120, xp: 60, tier: 'epic' },
+            { name: 'گربه افسانه‌ای میووی 🌟🐱', mp: 300, xp: 150, tier: 'legendary' }
+        ];
+
+        // Init App Event Handlers Safely
+        window.addEventListener('DOMContentLoaded', () => {
+            ensureAdminAccount();
+            const bindForm = (id, fn) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('submit', fn);
+            };
+
+            bindForm('login-form', (e) => handleUserAuth(e, 'login'));
+            bindForm('register-form', (e) => handleUserAuth(e, 'register'));
+            bindForm('chat-form', handleUserMessage);
+            bindForm('pay-form', handlePayCoinsForm);
+            bindForm('swap-form', handleSwapCoinsForm);
+            bindForm('user-gift-form', handleUserGiftCodeSubmit);
+            bindForm('admin-login-form', handleAdminLogin);
+
+            if (currentUser && appData.users[currentUser]) {
+                hideAuthOverlay();
+                updateUserUI();
+            } else {
+                showAuthOverlay();
+            }
+            renderGlobalChat();
+        });
+
+        function saveData() {
+            ensureAdminAccount();
+            localStorage.setItem('meowie_global_app_data', JSON.stringify(appData));
+            localStorage.setItem('meowie_current_user', currentUser || '');
+        }
+
+        function getCurrentTime() {
+            const d = new Date();
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        }
+
+        function generateWalletAddress(username) {
+            let hash = 0;
+            for (let i = 0; i < username.length; i++) hash = username.charCodeAt(i) + ((hash << 5) - hash);
+            return '0xMEOW' + Math.abs(hash).toString(16).padStart(8, '0') + '9482';
+        }
+
+        function showAuthOverlay() {
+            const el = document.getElementById('auth-overlay');
+            if (el) el.classList.remove('hidden');
+        }
+
+        function hideAuthOverlay() {
+            const el = document.getElementById('auth-overlay');
+            if (el) el.classList.add('hidden');
+        }
+
+        function toggleAuthTab(type) {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('auth-tab-login-btn');
+            const regBtn = document.getElementById('auth-tab-register-btn');
+
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                loginBtn.className = "flex-1 py-2 font-bold text-sm border-b-2 border-rose-500 text-rose-400";
+                regBtn.className = "flex-1 py-2 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                regBtn.className = "flex-1 py-2 font-bold text-sm border-b-2 border-purple-500 text-purple-400";
+                loginBtn.className = "flex-1 py-2 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+            }
+        }
+
+        function handleUserAuth(e, type) {
+            if (e) e.preventDefault();
+            ensureAdminAccount();
+
+            if (type === 'login') {
+                const u = document.getElementById('login-username').value.trim();
+                const p = document.getElementById('login-password').value.trim();
+                const err = document.getElementById('auth-error-msg');
+
+                if (appData.users[u] && appData.users[u].passwordHash === p) {
+                    if (appData.users[u].isBanned) {
+                        showToast("حساب کاربری شما توسط ادمین مسدود شده است!", 'error');
+                        return;
+                    }
+                    currentUser = u;
+                    saveData();
+                    hideAuthOverlay();
+                    updateUserUI();
+                    if (err) err.classList.add('hidden');
+                    showToast(`خوش آمدید، ${u}!`, 'success');
+                } else {
+                    if (err) err.classList.remove('hidden');
+                }
+            } else if (type === 'register') {
+                const u = document.getElementById('reg-username').value.trim();
+                const p = document.getElementById('reg-password').value.trim();
+                const p2 = document.getElementById('reg-confirm-password').value.trim();
+                const err = document.getElementById('reg-error-msg');
+
+                if (u.toLowerCase() === 'admin') {
+                    if (err) { err.innerText = 'امکان ثبت‌نام با نام کاربری admin وجود ندارد!'; err.classList.remove('hidden'); }
+                    return;
+                }
+                if (u.length < 3) {
+                    if (err) { err.innerText = 'نام کاربری باید حداقل ۳ کاراکتر باشد.'; err.classList.remove('hidden'); }
+                    return;
+                }
+                if (p !== p2) {
+                    if (err) { err.innerText = 'رمز عبور و تکرار آن یکسان نیستند!'; err.classList.remove('hidden'); }
+                    return;
+                }
+                if (appData.users[u]) {
+                    if (err) { err.innerText = 'این نام کاربری قبلاً ثبت شده است!'; err.classList.remove('hidden'); }
+                    return;
+                }
+
+                appData.users[u] = {
+                    passwordHash: p,
+                    coins: 0,
+                    xp: 0,
+                    level: 0,
+                    meowCount: 0,
+                    catchesCount: 0,
+                    inventory: [],
+                    meowTokens: 0.0,
+                    walletAddr: generateWalletAddress(u),
+                    luckBoost: 0,
+                    customLuckModifier: 0,
+                    isBanned: false,
+                    role: 'user'
+                };
+
+                currentUser = u;
+                saveData();
+                hideAuthOverlay();
+                updateUserUI();
+                showToast("حساب کاربری جدید با موفقیت ساخته شد!", 'success');
+            }
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            isAdminAuthenticated = false;
+            saveData();
+            showAuthOverlay();
+            showToast("از حساب خود خارج شدید.", 'info');
+        }
+
+        function updateUserUI() {
+            if (!currentUser || !appData.users[currentUser]) return;
+
+            const u = appData.users[currentUser];
+            const elCoins = document.getElementById('header-user-coins');
+            const elTokens = document.getElementById('header-user-meowtoken');
+            const elLevel = document.getElementById('header-user-level');
+            const elName = document.getElementById('header-username');
+            const statsBar = document.getElementById('user-stats-bar');
+
+            if (elCoins) elCoins.innerText = u.coins || 0;
+            if (elTokens) elTokens.innerText = (u.meowTokens || 0).toFixed(2);
+            if (elLevel) elLevel.innerText = u.level !== undefined ? u.level : 0;
+            if (elName) elName.innerText = currentUser;
+            if (statsBar) statsBar.classList.remove('hidden');
+        }
+
+        // Global Chat Engine
+        function handleUserMessage(e) {
+            if (e) e.preventDefault();
+            if (!currentUser) return showAuthOverlay();
+
+            const input = document.getElementById('chat-input');
+            if (!input) return;
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (appData.users[currentUser].isBanned) {
+                showToast("اکانت شما مسدود شده است.", 'error');
+                return;
+            }
+
+            input.value = '';
+            executeCommand(text);
+        }
+
+        function renderGlobalChat() {
+            const container = document.getElementById('chat-messages-container');
+            if (!container) return;
+
+            container.innerHTML = appData.chatMessages.map(m => {
+                const safeSender = escapeHTML(m.sender);
+                const safeText = escapeHTML(m.text);
+                const safeTime = escapeHTML(m.time);
+
+                if (m.isSystem) {
+                    return `
+                        <div class="flex justify-center my-1.5">
+                            <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl px-4 py-2 text-xs text-slate-300 max-w-lg text-center leading-relaxed shadow-sm">
+                                ${safeText}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const isMe = m.sender === currentUser;
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} my-1">
+                        <div class="text-[10px] text-slate-400 mb-0.5 px-1">${safeSender} • ${safeTime}</div>
+                        <div class="rounded-2xl px-3.5 py-2 text-xs max-w-xs sm:max-w-md ${isMe ? 'bg-gradient-to-r from-rose-600 to-purple-600 text-white shadow-md' : 'bg-slate-900 border border-slate-800 text-slate-200'}">
+                            ${safeText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function executeCommand(cmdText) {
+            if (!currentUser) return showAuthOverlay();
+            const u = appData.users[currentUser];
+            const cleanCmd = cmdText.trim();
+
+            if (cleanCmd === 'میو') {
+                const now = Date.now();
+                if (now - lastMeowTime < 5000) {
+                    showToast("لطفاً ۵ ثانیه بین هر «میو» صبر کنید!", 'warning');
+                    return;
+                }
+                lastMeowTime = now;
+                u.meowCount = (u.meowCount || 0) + 1;
+                u.coins = (u.coins || 0) + 5;
+                u.xp = (u.xp || 0) + 5;
+
+                // Level Progression Check
+                if (u.level === 0 && u.meowCount >= 10) { u.level = 1; showToast("سطح شما به ۱ ارتقا یافت!", 'success'); }
+                if (u.level === 1 && u.meowCount >= 20) { u.level = 2; showToast("سطح شما به ۲ ارتقا یافت!", 'success'); }
+                if (u.level === 2 && u.meowCount >= 30) { u.level = 3; showToast("سطح شما به ۳ ارتقا یافت! امکان شکار فعال شد.", 'success'); }
+
+                saveData();
+                updateUserUI();
+
+                appData.chatMessages.push({
+                    sender: currentUser,
+                    text: `🐱 میو! (تعداد میو: ${u.meowCount} | پاداش: +5 MP)`,
+                    time: getCurrentTime()
+                });
+                renderGlobalChat();
+                return;
+            }
+
+            if (cleanCmd === 'شکار') {
+                if (u.level < 3) {
+                    showToast("دستور «شکار» از سطح ۳ به بعد باز می‌شود! ابتدا با میو گفتن سطح خود را بالا ببرید.", 'warning');
+                    return;
+                }
+
+                const rates = appData.rates || { fail: 35, common: 70, rare: 20, epic: 8, legendary: 2 };
+                const totalLuck = (u.luckBoost || 0) + (u.customLuckModifier || 0);
+                const roll = Math.random() * 100;
+                const adjustedFail = Math.max(5, rates.fail - totalLuck);
+
+                if (roll < adjustedFail) {
+                    appData.chatMessages.push({
+                        sender: currentUser,
+                        text: `😿 ناکامی در شکار! گربه متوجه حضور شما شد و فرار کرد.`,
+                        time: getCurrentTime()
+                    });
+                } else {
+                    const catRoll = Math.random() * 100;
+                    let cat = CATS_DATABASE[0];
+                    if (catRoll > 95) cat = CATS_DATABASE[3];
+                    else if (catRoll > 80) cat = CATS_DATABASE[2];
+                    else if (catRoll > 50) cat = CATS_DATABASE[1];
+
+                    u.coins = (u.coins || 0) + cat.mp;
+                    u.xp = (u.xp || 0) + cat.xp;
+                    u.catchesCount = (u.catchesCount || 0) + 1;
+                    u.inventory = u.inventory || [];
+                    u.inventory.push(cat.name);
+
+                    appData.chatMessages.push({
+                        sender: currentUser,
+                        text: `🐾 موفقیت در شکار! شما یک **${cat.name}** صید کردید! (+${cat.mp} MP | +${cat.xp} XP)`,
+                        time: getCurrentTime()
+                    });
+                }
+
+                saveData();
+                updateUserUI();
+                renderGlobalChat();
+                return;
+            }
+
+            if (cleanCmd === 'پروفایل') {
+                const info = `👤 **پروفایل ${currentUser}:**\n• سطح: ${u.level || 0}\n• سکه: ${u.coins || 0} MP\n• کریپتو داخلی: ${(u.meowTokens || 0).toFixed(2)} $MEOW\n• تعداد میو: ${u.meowCount || 0}\n• شکار موفق: ${u.catchesCount || 0}\n• بوست شانس: +${(u.luckBoost || 0) + (u.customLuckModifier || 0)}%`;
+                appData.chatMessages.push({ sender: 'MeowieBot', text: info, time: getCurrentTime(), isSystem: true });
+                renderGlobalChat();
+                return;
+            }
+
+            if (cleanCmd === 'دیلی' || cleanCmd === 'پاداش') {
+                const now = new Date().toDateString();
+                if (u.lastDaily === now) {
+                    showToast("شما امروز پاداش روزانه را دریافت کرده‌اید!", 'warning');
+                    return;
+                }
+                u.lastDaily = now;
+                u.coins = (u.coins || 0) + 100;
+                saveData();
+                updateUserUI();
+
+                appData.chatMessages.push({
+                    sender: currentUser,
+                    text: `🎁 پاداش روزانه دریافت شد! (+100 MP)`,
+                    time: getCurrentTime()
+                });
+                renderGlobalChat();
+                showToast("پاداش روزانه +100 MP دریافت شد!", 'success');
+                return;
+            }
+
+            if (cleanCmd.startsWith('هدیه ')) {
+                const code = cleanCmd.replace('هدیه ', '');
+                processRedeemGiftCode(code);
+                return;
+            }
+
+            // Chat Message Dispatch
+            appData.chatMessages.push({
+                sender: currentUser,
+                text: cleanCmd,
+                time: getCurrentTime()
+            });
+            saveData();
+            renderGlobalChat();
+        }
+
+        // Actions & Transfers
+        function handlePayCoinsForm(e) {
+            if (e) e.preventDefault();
+            if (!currentUser) return showAuthOverlay();
+
+            const currency = document.getElementById('pay-currency-type').value;
+            const target = document.getElementById('pay-target-user').value.trim();
+            const amount = parseFloat(document.getElementById('pay-amount-input').value);
+            const senderAcc = appData.users[currentUser];
+
+            if (!appData.users[target]) return showToast("کاربر مقصد یافت نشد!", 'error');
+            if (target === currentUser) return showToast("نمی‌توانید به خودتان دارایی منتقل کنید!", 'warning');
+            if (isNaN(amount) || amount <= 0) return showToast("مقدار وارد شده نامعتبر است!", 'error');
+
+            if (currency === 'mp') {
+                if ((senderAcc.coins || 0) < amount) return showToast("سکه MP کافی ندارید!", 'error');
+                senderAcc.coins -= amount;
+                appData.users[target].coins = (appData.users[target].coins || 0) + amount;
+
+                appData.chatMessages.push({
+                    sender: 'MeowieBot',
+                    text: `💸 **انتقال سکه:** کاربر **${currentUser}** مقدار **${amount} MP** به **${target}** منتقل کرد!`,
+                    time: getCurrentTime(),
+                    isSystem: true
+                });
+            } else {
+                if ((senderAcc.meowTokens || 0) < amount) return showToast("توکن $MEOW کافی ندارید!", 'error');
+                senderAcc.meowTokens -= amount;
+                appData.users[target].meowTokens = (appData.users[target].meowTokens || 0) + amount;
+
+                appData.chatMessages.push({
+                    sender: 'MeowieBot',
+                    text: `💎 **انتقال کریپتو:** کاربر **${currentUser}** مقدار **${amount.toFixed(2)} $MEOW** به **${target}** منتقل کرد!`,
+                    time: getCurrentTime(),
+                    isSystem: true
+                });
+            }
+
+            saveData();
+            updateUserUI();
+            closePayModal();
+            renderGlobalChat();
+            showToast("انتقال دارایی با موفقیت انجام شد.", 'success');
+        }
+
+        function handleSwapCoinsForm(e) {
+            if (e) e.preventDefault();
+            if (!currentUser) return showAuthOverlay();
+
+            const u = appData.users[currentUser];
+            const direction = document.getElementById('swap-direction-select').value;
+            const amount = parseFloat(document.getElementById('swap-amount-input').value);
+            const rate = appData.swapRate || 1000;
+
+            if (isNaN(amount) || amount <= 0) return showToast("مقدار وارد شده نامعتبر است.", 'error');
+
+            if (direction === 'mp_to_token') {
+                if (amount < rate) return showToast(`حداقل مقدار برای تبدیل سکه ${rate} MP است.`, 'warning');
+                if ((u.coins || 0) < amount) return showToast("سکه MP کافی ندارید.", 'error');
+
+                const tokensGained = amount / rate;
+                u.coins -= amount;
+                u.meowTokens = (u.meowTokens || 0) + tokensGained;
+                showToast(`تبدیل انجام شد! ${amount} MP به ${tokensGained.toFixed(2)} $MEOW تبدیل شد.`, 'success');
+            } else {
+                if ((u.meowTokens || 0) < amount) return showToast("توکن $MEOW کافی ندارید.", 'error');
+
+                const mpGained = amount * rate;
+                u.meowTokens -= amount;
+                u.coins = (u.coins || 0) + mpGained;
+                showToast(`تبدیل انجام شد! ${amount.toFixed(2)} $MEOW به ${mpGained} MP تبدیل شد.`, 'success');
+            }
+
+            saveData();
+            updateUserUI();
+            openWalletModal();
+        }
+
+        function handleUserGiftCodeSubmit(e) {
+            if (e) e.preventDefault();
+            const codeInput = document.getElementById('user-gift-code-input').value;
+            processRedeemGiftCode(codeInput);
+            closeGiftModal();
+        }
+
+        function buyLevelUpgrade() {
+            if (!currentUser) return showAuthOverlay();
+            const u = appData.users[currentUser];
+            const cost = (u.level || 1) * 250;
+
+            if (u.coins < cost) return showToast("سکه MP شما برای ارتقای لول کافی نیست!", 'error');
+            u.coins -= cost;
+            u.level = (u.level || 0) + 1;
+
+            saveData();
+            openUpgradeModal();
+            updateUserUI();
+            showToast(`ارتقای سطح موفقیت‌آمیز بود! سطح جدید: ${u.level}`, 'success');
+        }
+
+        function openGiftModal() {
+            document.getElementById('user-gift-modal').classList.remove('hidden');
+        }
+        function closeGiftModal() {
+            document.getElementById('user-gift-modal').classList.add('hidden');
+        }
+
+        function openSmugglingModal() {
+            if (!currentUser) return showAuthOverlay();
+            const u = appData.users[currentUser];
+            const modal = document.getElementById('smuggling-modal');
+            const lockedView = document.getElementById('smuggling-locked-view');
+            const unlockedView = document.getElementById('smuggling-unlocked-view');
+
+            if (u.level < 10) {
+                lockedView.classList.remove('hidden');
+                unlockedView.classList.add('hidden');
+            } else {
+                lockedView.classList.add('hidden');
+                unlockedView.classList.remove('hidden');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeSmugglingModal() {
+            document.getElementById('smuggling-modal').classList.add('hidden');
+        }
+
+        function buySmuggledItem(name, cryptoCost, mpReward) {
+            const u = appData.users[currentUser];
+            if ((u.meowTokens || 0) < cryptoCost) return showToast("موجودی توکن $MEOW شما کافی نیست!", 'error');
+
+            u.meowTokens -= cryptoCost;
+            u.coins = (u.coins || 0) + mpReward;
+
+            saveData();
+            updateUserUI();
+            closeSmugglingModal();
+
+            appData.chatMessages.push({
+                sender: currentUser,
+                text: `🕵️ معامله بازار قاچاق موفق بود! پرداخت ${cryptoCost} $MEOW و دریافت ${mpReward} MP`,
+                time: getCurrentTime()
+            });
+            renderGlobalChat();
+            showToast("معامله بازار قاچاق با موفقیت انجام شد!", 'success');
+        }
+
+        // Admin Panel Controls
+        function openAdminModal() {
+            const modal = document.getElementById('admin-modal');
+            if (modal) modal.classList.remove('hidden');
+
+            if (!isAdminAuthenticated) {
+                document.getElementById('admin-login-card').classList.remove('hidden');
+                document.getElementById('admin-dashboard').classList.add('hidden');
+            } else {
+                document.getElementById('admin-login-card').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderAdminDashboard();
+            }
+        }
+
+        function closeAdminModal() {
+            const modal = document.getElementById('admin-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleAdminLogin(e) {
+            if (e) e.preventDefault();
+            const uInput = document.getElementById('admin-user-input').value.trim();
+            const pInput = document.getElementById('admin-pass-input').value.trim();
+            const errEl = document.getElementById('admin-login-error');
+
+            const adminAcc = appData.users['admin'];
+            const validPass = adminAcc ? adminAcc.passwordHash : 'Diba#4488';
+
+            if (uInput === 'admin' && pInput === validPass) {
+                isAdminAuthenticated = true;
+                if (errEl) errEl.classList.add('hidden');
+                document.getElementById('admin-login-card').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderAdminDashboard();
+                showToast("ورود ادمین تایید شد.", 'success');
+            } else {
+                if (errEl) errEl.classList.remove('hidden');
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            const tabs = ['users', 'luckmod', 'transfers', 'crypto', 'giftcodes', 'rates', 'broadcast', 'settings'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = "admin-tab px-4 py-3 border-b-2 border-rose-500 text-rose-400 font-medium text-xs whitespace-nowrap";
+                    } else {
+                        btn.className = "admin-tab px-4 py-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-xs whitespace-nowrap";
+                    }
+                }
+                if (content) {
+                    if (t === tabName) content.classList.remove('hidden');
+                    else content.classList.add('hidden');
+                }
+            });
+            renderAdminDashboard();
+        }
+
+        function renderAdminDashboard() {
+            populateUserDropdowns();
+            renderAdminUsersTable();
+            renderAdminCryptoWallets();
+            renderAdminGiftCodes();
+
+            const curRateEl = document.getElementById('admin-current-swap-rate');
+            if (curRateEl) curRateEl.innerText = appData.swapRate || 1000;
+        }
+
+        function populateUserDropdowns() {
+            const userKeys = Object.keys(appData.users);
+            const optionsHtml = userKeys.map(u => `<option value="${escapeHTML(u)}">${escapeHTML(u)}</option>`).join('');
+
+            ['admin-luck-user-select', 'admin-transfer-mp-user', 'admin-transfer-crypto-user'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = optionsHtml;
+            });
+        }
+
+        function renderAdminUsersTable() {
+            const tbody = document.getElementById('admin-users-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = Object.keys(appData.users).map(u => {
+                const usr = appData.users[u];
+                const luckTotal = (usr.luckBoost || 0) + (usr.customLuckModifier || 0);
+                const safeName = escapeHTML(u);
+                return `
+                    <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+                        <td class="p-3 font-bold text-rose-300">${safeName}</td>
+                        <td class="p-3 text-amber-400 font-bold">${usr.coins || 0} MP</td>
+                        <td class="p-3 text-emerald-400 font-bold">${(usr.meowTokens || 0).toFixed(2)} $MEOW</td>
+                        <td class="p-3 text-purple-400 font-bold">لول ${usr.level !== undefined ? usr.level : 0}</td>
+                        <td class="p-3 text-cyan-400">+${luckTotal}%</td>
+                        <td class="p-3">${usr.isBanned ? '<span class="text-rose-500 font-bold">مسدود</span>' : '<span class="text-emerald-400">فعال</span>'}</td>
+                        <td class="p-3">
+                            <button type="button" onclick="adminToggleBan('${safeName}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2 py-1 rounded text-[10px]">
+                                ${usr.isBanned ? 'رفع مسدودی' : 'مسدود'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function adminToggleBan(username) {
+            if (username === 'admin') return showToast("امکان بن کردن اکانت ادمین وجود ندارد!", 'error');
+            if (appData.users[username]) {
+                appData.users[username].isBanned = !appData.users[username].isBanned;
+                saveData();
+                renderAdminUsersTable();
+                showToast(`وضعیت مسدودی کاربر ${username} تغییر یافت.`, 'info');
+            }
+        }
+
+        function adminSubmitLuckLevelForm() {
+            const username = document.getElementById('admin-luck-user-select').value;
+            const newLvl = parseInt(document.getElementById('admin-luck-level-input').value);
+            const luckMod = parseInt(document.getElementById('admin-luck-mod-input').value);
+
+            if (!appData.users[username]) return showToast("کاربر انتخاب شده معتبر نیست.", 'error');
+
+            if (!isNaN(newLvl) && newLvl >= 0) appData.users[username].level = newLvl;
+            if (!isNaN(luckMod)) appData.users[username].customLuckModifier = luckMod;
+
+            saveData();
+            updateUserUI();
+            renderAdminDashboard();
+            showToast(`تغییرات سطح/شانس کاربر ${username} اعمال شد.`, 'success');
+        }
+
+        function adminExecuteMPTransfer() {
+            const username = document.getElementById('admin-transfer-mp-user').value;
+            const amount = parseInt(document.getElementById('admin-transfer-mp-amount').value);
+
+            if (!appData.users[username]) return showToast("کاربر نامعتبر است!", 'error');
+            if (isNaN(amount)) return showToast("مقدار وارد شده نامعتبر است!", 'error');
+
+            appData.users[username].coins = (appData.users[username].coins || 0) + amount;
+            saveData();
+            updateUserUI();
+            renderAdminDashboard();
+            showToast(`مقدار ${amount} MP به حساب ${username} اعمال شد.`, 'success');
+        }
+
+        function adminExecuteCryptoTransfer() {
+            const username = document.getElementById('admin-transfer-crypto-user').value;
+            const amount = parseFloat(document.getElementById('admin-transfer-crypto-amount').value);
+
+            if (!appData.users[username]) return showToast("کاربر نامعتبر است!", 'error');
+            if (isNaN(amount)) return showToast("مقدار وارد شده نامعتبر است!", 'error');
+
+            appData.users[username].meowTokens = (appData.users[username].meowTokens || 0) + amount;
+            saveData();
+            updateUserUI();
+            renderAdminDashboard();
+            showToast(`مقدار ${amount.toFixed(2)} $MEOW به حساب ${username} واریز شد.`, 'success');
+        }
+
+        function adminSaveSwapRate() {
+            const newRate = parseInt(document.getElementById('admin-swap-rate-input').value);
+            if (isNaN(newRate) || newRate <= 0) return showToast("نرخ تبدیل نامعتبر است!", 'error');
+            appData.swapRate = newRate;
+            saveData();
+            renderAdminDashboard();
+            showToast(`نرخ جدید ثبت شد: هر ${newRate} MP = 1 $MEOW`, 'success');
+        }
+
+        function adminGrantTokensPrompt() {
+            const username = document.getElementById('admin-transfer-crypto-user').value;
+            if (!username || !appData.users[username]) return showToast("کاربر انتخاب نشده است!", 'error');
+            const amountStr = prompt("مقدار توکن $MEOW برای شارژ مستقیم:");
+            if (!amountStr) return;
+            const amount = parseFloat(amountStr);
+            if (isNaN(amount) || amount <= 0) return showToast("مقدار نامعتبر است.", 'error');
+
+            appData.users[username].meowTokens = (appData.users[username].meowTokens || 0) + amount;
+            saveData();
+            updateUserUI();
+            renderAdminDashboard();
+            showToast(`موفقیت‌آمیز! ${amount.toFixed(2)} $MEOW به ${username} تعلق گرفت.`, 'success');
+        }
+
+        function renderAdminCryptoWallets() {
+            const container = document.getElementById('admin-crypto-wallets-list');
+            if (!container) return;
+
+            container.innerHTML = Object.keys(appData.users).map(u => {
+                const usr = appData.users[u];
+                const safeName = escapeHTML(u);
+                return `
+                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-rose-300">${safeName}: </span>
+                            <span class="font-mono text-emerald-400">${usr.walletAddr || '0xNONE'}</span>
+                        </div>
+                        <div class="text-slate-300 font-bold">
+                            ${(usr.meowTokens || 0).toFixed(2)} $MEOW
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function adminCreateGiftCode() {
+            const code = document.getElementById('gift-code-name').value.trim().toUpperCase();
+            const reward = parseInt(document.getElementById('gift-code-reward').value);
+            const uses = parseInt(document.getElementById('gift-code-uses').value);
+
+            if (!code || isNaN(reward) || isNaN(uses)) return showToast("اطلاعات کد هدیه ناقص است.", 'error');
+
+            appData.giftCodes = appData.giftCodes || {};
+            appData.giftCodes[code] = { reward, usesLeft: uses, claimedBy: [] };
+
+            saveData();
+            renderAdminGiftCodes();
+            showToast(`کد هدیه ${code} با پاداش ${reward} MP ساخته شد.`, 'success');
+        }
+
+        function renderAdminGiftCodes() {
+            const container = document.getElementById('admin-gift-codes-list');
+            if (!container) return;
+
+            const codes = appData.giftCodes || {};
+            const keys = Object.keys(codes);
+
+            if (keys.length === 0) {
+                container.innerHTML = '<div class="text-slate-500">هیچ کد هدیه فعالی وجود ندارد.</div>';
+                return;
+            }
+
+            container.innerHTML = keys.map(k => `
+                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex justify-between items-center">
+                    <div>
+                        <span class="font-mono font-bold text-amber-400">${escapeHTML(k)}</span> - پاداش: ${codes[k].reward} MP
+                    </div>
+                    <div class="text-slate-400">
+                        استفاده‌های باقی‌مانده: <strong class="text-white">${codes[k].usesLeft}</strong>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function processRedeemGiftCode(code) {
+            code = code.trim().toUpperCase();
+            const gc = appData.giftCodes ? appData.giftCodes[code] : null;
+
+            if (!gc) return showToast("کد هدیه وارد شده معتبر نیست!", 'error');
+            if (gc.usesLeft <= 0) return showToast("ظرفیت این کد هدیه به پایان رسیده است!", 'error');
+            if (gc.claimedBy && gc.claimedBy.includes(currentUser)) return showToast("شما قبلاً این کد هدیه را دریافت کرده‌اید!", 'warning');
+
+            gc.usesLeft -= 1;
+            gc.claimedBy = gc.claimedBy || [];
+            gc.claimedBy.push(currentUser);
+
+            appData.users[currentUser].coins = (appData.users[currentUser].coins || 0) + gc.reward;
+            saveData();
+            updateUserUI();
+
+            const sysMsg = `🎁 **کد هدیه:** کاربر **${currentUser}** با وارد کردن کد **${code}** مبلغ **${gc.reward} MP** جایزه دریافت کرد!`;
+            appData.chatMessages.push({ sender: 'MeowieBot', text: sysMsg, time: getCurrentTime(), isSystem: true });
+            renderGlobalChat();
+            showToast(`تبریک! مبلغ ${gc.reward} MP به موجودی شما اضافه شد.`, 'success');
+        }
+
+        function updateRateLabel() {
+            document.getElementById('rate-val-fail').innerText = document.getElementById('rate-fail').value;
+            document.getElementById('rate-val-common').innerText = document.getElementById('rate-common').value;
+            document.getElementById('rate-val-rare').innerText = document.getElementById('rate-rare').value;
+            document.getElementById('rate-val-epic').innerText = document.getElementById('rate-epic').value;
+            document.getElementById('rate-val-legendary').innerText = document.getElementById('rate-legendary').value;
+        }
+
+        function saveRates() {
+            appData.rates = {
+                fail: parseInt(document.getElementById('rate-fail').value),
+                common: parseInt(document.getElementById('rate-common').value),
+                rare: parseInt(document.getElementById('rate-rare').value),
+                epic: parseInt(document.getElementById('rate-epic').value),
+                legendary: parseInt(document.getElementById('rate-legendary').value)
+            };
+            saveData();
+            showToast("تنظیمات شانس صید کلی ذخیره شد!", 'success');
+        }
+
+        function sendBroadcast() {
+            const txt = document.getElementById('admin-broadcast-msg').value.trim();
+            if (!txt) return;
+
+            appData.chatMessages.push({
+                sender: 'مدیریت Meowie 📢',
+                text: txt,
+                time: getCurrentTime(),
+                isSystem: true
+            });
+            document.getElementById('admin-broadcast-msg').value = '';
+            saveData();
+            renderGlobalChat();
+            showToast("اطلاعیه به چت عمومی ارسال شد.", 'success');
+        }
+
+        function adminChangePassword() {
+            const newP = document.getElementById('admin-new-pass').value.trim();
+            if (!newP) return showToast("لطفاً رمز عبور جدید را وارد کنید.", 'error');
+
+            if (appData.users['admin']) {
+                appData.users['admin'].passwordHash = newP;
+                saveData();
+                showToast(`رمز عبور ادمین با موفقیت به "${newP}" تغییر یافت.`, 'success');
+            }
+        }
+
+        function clearGlobalChat() {
+            appData.chatMessages = [
+                { sender: 'MeowieBot', text: '🧹 پیام‌های چت توسط مدیریت پاکسازی شدند.', time: getCurrentTime(), isSystem: true }
+            ];
+            saveData();
+            renderGlobalChat();
+            showToast("پیام‌های چت پاکسازی شدند.", 'info');
+        }
+
+        function adminResetAllData() {
+            if (!confirm("آیا مطمئن هستید که می‌خواهید تمامی داده‌های بازی و کاربران را ریست کنید؟")) return;
+            localStorage.removeItem('meowie_global_app_data');
+            location.reload();
+        }
+
+        function openWalletModal() {
+            if (!currentUser) return showAuthOverlay();
+            const u = appData.users[currentUser];
+            const isUnlocked = u.level >= 10 || u.role === 'admin';
+
+            const lockedView = document.getElementById('wallet-locked-view');
+            const unlockedView = document.getElementById('wallet-unlocked-view');
+
+            if (!isUnlocked) {
+                if (lockedView) lockedView.classList.remove('hidden');
+                if (unlockedView) unlockedView.classList.add('hidden');
+            } else {
+                if (lockedView) lockedView.classList.add('hidden');
+                if (unlockedView) unlockedView.classList.remove('hidden');
+
+                const addr = document.getElementById('wallet-address-display');
+                const mpBal = document.getElementById('wallet-mp-balance');
+                const tokBal = document.getElementById('wallet-token-balance');
+
+                if (addr) addr.innerText = u.walletAddr || '0xMEOW...';
+                if (mpBal) mpBal.innerText = u.coins || 0;
+                if (tokBal) tokBal.innerText = (u.meowTokens || 0).toFixed(2);
+            }
+
+            document.getElementById('wallet-modal').classList.remove('hidden');
+        }
+
+        function closeWalletModal() {
+            document.getElementById('wallet-modal').classList.add('hidden');
+        }
+
+        function openUpgradeModal() {
+            if (!currentUser) return showAuthOverlay();
+            const u = appData.users[currentUser];
+
+            const lvlCost = document.getElementById('upgrade-lvl-cost');
+            const luckCost = document.getElementById('upgrade-luck-cost');
+
+            if (lvlCost) lvlCost.innerText = (u.level || 1) * 250;
+            if (luckCost) luckCost.innerText = ((u.luckBoost || 0) + 1) * 150;
+
+            document.getElementById('upgrade-modal').classList.remove('hidden');
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgrade-modal').classList.add('hidden');
+        }
+
+        function buyLuckUpgrade() {
+            const u = appData.users[currentUser];
+            const cost = ((u.luckBoost || 0) + 1) * 150;
+            if (u.coins < cost) return showToast("سکه MP شما برای ارتقای شانس کافی نیست!", 'error');
+
+            u.coins -= cost;
+            u.luckBoost = (u.luckBoost || 0) + 5;
+            saveData();
+            openUpgradeModal();
+            updateUserUI();
+            showToast(`ارتقای شانس موفقیت‌آمیز بود! +5% شانس صید اضافه گردید.`, 'success');
+        }
+
+        function openPayModal() {
+            if (!currentUser) return showAuthOverlay();
+            document.getElementById('pay-modal').classList.remove('hidden');
+        }
+
+        function closePayModal() {
+            document.getElementById('pay-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
